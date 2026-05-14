@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finance Wiki — User Flow Design</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #141b34;
+      --line: #2b3a73;
+      --text: #e9eefc;
+      --muted: #9eb0e5;
+      --good: #2ad392;
+      --warn: #ffca57;
+      --bad: #ff6b6b;
+      --accent: #61dafb;
+    }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #090f1f, #0b1020 40%);
+      color: var(--text);
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 20px 42px; }
+    h1 { margin: 0 0 8px; font-size: 30px; }
+    p { margin: 0 0 18px; color: var(--muted); }
+    h2 { margin: 26px 0 10px; font-size: 20px; }
+    .grid { display: grid; gap: 12px; }
+    .flow { grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); }
+    .node {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 82px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.24);
+    }
+    .node b { color: #fff; display: block; margin-bottom: 4px; }
+    .arrow { color: var(--accent); text-align: center; font-size: 20px; opacity: 0.9; }
+    .mini { color: var(--muted); font-size: 13px; }
+    .list { display: grid; gap: 8px; margin-top: 8px; }
+    .risk {
+      background: rgba(255,255,255,0.02);
+      border-left: 3px solid var(--warn);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .good { border-left-color: var(--good); }
+    .bad { border-left-color: var(--bad); }
+    code {
+      background: rgba(255,255,255,0.08);
+      padding: 1px 5px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Finance Wiki — User Flow Design View</h1>
+    <p>Compiled from <code>spec.md</code>: end-to-end user journeys, system touchpoints, and critical failure/decision paths.</p>
+
+    <h2>1) Holdings Ingestion Flow</h2>
+    <div class="grid flow">
+      <div class="node"><b>User input</b>Fidelity XLSX/CSV, RH paste, MS paste/static MSFT shares</div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Ingest scripts</b><code>ingest_fidelity.py</code> / <code>ingest_paste.py</code></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Idempotency gate</b>SHA-256 dedup, archive immutable raw under <code>data/raw/</code></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Parsed snapshots</b>Write <code>data/snapshots/*.json</code> + regenerate account markdowns</div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Unified portfolio</b><code>build_combined.py</code> updates <code>portfolio/_combined.md</code> + auto position blocks</div>
+    </div>
+
+    <h2>2) Tweet Intelligence Flow</h2>
+    <div class="grid flow">
+      <div class="node"><b>User shares tweet</b>Paste text/URL into <code>ingest_tweet.py</code></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Raw archive</b>Create markdown in <code>notes/tweets/</code> with traceable source</div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Extraction pass</b>Copilot prompt extracts <span class="mini">intent, thesis, context, tickers, themes</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Knowledge updates</b>Backlinks into <code>tickers/*.md</code>, accumulate <code>themes/*.md</code></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Future reasoning context</b>Reusable by conviction/deep-dive/rebalance prompts</div>
+    </div>
+
+    <h2>3) Rebalance Decision Flow</h2>
+    <div class="grid flow">
+      <div class="node"><b>Context bundle</b><code>context_for.py --all-tickers</code> with portfolio + prices + fundamentals + themes</div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Copilot reasoning</b><code>prompts/rebalance.md</code> applies tax/account constraints</div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Output table</b><span class="mini">account | ticker | action | shares | rationale | tax_impact | conviction</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Human approval</b>You decide what to execute and what to commit into wiki</div>
+    </div>
+
+    <h2>4) Control Loops (Daily / Weekly)</h2>
+    <div class="grid flow">
+      <div class="node"><b>Daily</b>Ingest changes → refresh prices → rebuild combined dashboard</div>
+      <div class="node"><b>Weekly</b>Refresh fundamentals → rescore conviction → update theses/themes</div>
+      <div class="node"><b>Event-driven</b>Important tweet/note triggers thematic + ticker-level updates</div>
+    </div>
+
+    <h2>Design Risks, Options, and Loopholes</h2>
+    <div class="list">
+      <div class="risk bad"><b>Loophole: file-level dedup only.</b> Same holdings exported on a new date produce new hashes and repeated snapshots. <b>Option:</b> add a normalized holdings hash (ticker+shares+cost) to detect semantic duplicates.</div>
+      <div class="risk bad"><b>Loophole: weak provenance scoring.</b> Tweets can become “ground truth” too easily. <b>Option:</b> add evidence tiers (company filing &gt; earnings call &gt; reputable source &gt; social) and weight theme updates by tier.</div>
+      <div class="risk bad"><b>Loophole: stale prices in decisions.</b> Daily close may mislead after-hours or pre-market recommendations. <b>Option:</b> include freshness metadata and confidence downgrade when price age exceeds threshold.</div>
+      <div class="risk"><b>Tradeoff: markdown-only simplicity vs query power.</b> Current design is excellent for auditability, but cross-cut metrics (lot aging, AIRA backtests) will get expensive. <b>Option:</b> keep markdown as source of truth and add a derived SQLite index later.</div>
+      <div class="risk"><b>Tradeoff: LLM consistency.</b> Prompt-only extraction can drift over time. <b>Option:</b> enforce a strict JSON schema and validator before writing frontmatter.</div>
+      <div class="risk good"><b>Strength: bounded auto-sections.</b> Clear marker-based writes protect analyst notes and avoid accidental overwrite.</div>
+      <div class="risk good"><b>Strength: account-aware rules.</b> Fidelity-first, RH tax warnings, MS no-trade constraint are explicit and operationally useful.</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# local secrets / env
+.env
+.env.local
+.env.*.local
+.env.autopilot
+
+# build / deps
+node_modules/
+dist/
+build/
+.wrangler/
+
+# OS / editor cruft
+.DS_Store
+.vscode/
+.idea/
+*.swp

@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance Tracker — System Overview</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      background: #1a1d27cc;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #2d3148;
+      display: flex;
+      gap: 4px;
+      padding: 10px 24px;
+      z-index: 100;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      transition: all .15s;
+    }
+    nav a:hover { background: #2d3148; color: #e2e8f0; }
+    nav .logo { color: #6ee7b7; font-weight: 700; font-size: 14px; margin-right: 12px; align-self: center; }
+
+    /* ── LAYOUT ── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #6ee7b7, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+    h2 { font-size: 1.25rem; font-weight: 700; color: #e2e8f0; margin-bottom: 16px; margin-top: 48px; display: flex; align-items: center; gap: 8px; }
+    h2 .icon { font-size: 1.1rem; }
+    h3 { font-size: 1rem; font-weight: 600; color: #94a3b8; margin-bottom: 10px; }
+    p { color: #94a3b8; font-size: 14px; margin-bottom: 12px; }
+    .subtitle { color: #64748b; font-size: 15px; margin-bottom: 32px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+    /* ── ARCHITECTURE DIAGRAM ── */
+    .arch {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+
+    .arch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      min-width: 700px;
+    }
+
+    .arch-box {
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 14px 16px;
+      background: #0f1117;
+      transition: border-color .2s, transform .15s;
+      cursor: default;
+    }
+    .arch-box:hover { border-color: #6ee7b7; transform: translateY(-2px); }
+    .arch-box .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .arch-box .title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .arch-box .desc { font-size: 12px; color: #64748b; }
+
+    .color-green .label { color: #6ee7b7; }
+    .color-green { border-color: #1e4035 !important; }
+    .color-blue .label { color: #60a5fa; }
+    .color-blue { border-color: #1e3a5f !important; }
+    .color-purple .label { color: #a78bfa; }
+    .color-purple { border-color: #2e1e5f !important; }
+    .color-orange .label { color: #fb923c; }
+    .color-orange { border-color: #4a2800 !important; }
+    .color-red .label { color: #f87171; }
+    .color-red { border-color: #4a1a1a !important; }
+    .color-yellow .label { color: #fbbf24; }
+    .color-yellow { border-color: #3a2e00 !important; }
+
+    /* ── ARROW ROW ── */
+    .arrow-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 0;
+      color: #475569;
+      font-size: 20px;
+    }
+
+    /* ── FLOW DIAGRAM ── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 0;
+      position: relative;
+    }
+    .flow-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 48px;
+      bottom: -14px;
+      width: 2px;
+      background: #2d3148;
+    }
+    .flow-num {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      z-index: 1;
+    }
+    .flow-content .title { font-size: 14px; font-weight: 600; color: #e2e8f0; margin-bottom: 2px; }
+    .flow-content .detail { font-size: 12px; color: #64748b; }
+
+    /* ── TABLE ── */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #2d3148; }
+    th { padding: 10px 14px; text-align: left; font-weight: 600; color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    td { padding: 10px 14px; border-bottom: 1px solid #1e2235; color: #94a3b8; }
+    tr:hover td { background: #1e2235; }
+    td:first-child { color: #e2e8f0; font-weight: 500; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-green { background: #064e3b; color: #6ee7b7; }
+    .badge-blue { background: #1e3a5f; color: #60a5fa; }
+    .badge-orange { background: #4a2800; color: #fb923c; }
+    .badge-purple { background: #2e1e5f; color: #a78bfa; }
+    .badge-gray { background: #1e293b; color: #94a3b8; }
+
+    /* ── PHASES ── */
+    .phase-list { display: flex; flex-direction: column; gap: 10px; }
+    .phase {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 10px;
+      padding: 14px 18px;
+      transition: border-color .2s;
+    }
+    .phase:hover { border-color: #3b82f6; }
+    .phase-num {
+      min-width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #2d3148;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: #60a5fa;
+    }
+    .phase-title { font-size: 14px; font-weight: 600; color: #e2e8f0; }
+    .phase-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .phase-milestone { font-size: 11px; color: #6ee7b7; margin-top: 4px; }
+
+    /* ── DB SCHEMA ── */
+    .schema-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .schema-table { background: #1a1d27; border: 1px solid #2d3148; border-radius: 10px; overflow: hidden; }
+    .schema-table .table-header { padding: 10px 16px; background: #2d3148; font-size: 13px; font-weight: 700; color: #60a5fa; font-family: monospace; }
+    .schema-table .col { display: flex; justify-content: space-between; padding: 7px 16px; border-bottom: 1px solid #1e2235; font-size: 12px; }
+    .schema-table .col:last-child { border-bottom: none; }
+    .schema-table .col .name { color: #e2e8f0; font-family: monospace; }
+    .schema-table .col .type { color: #64748b; font-size: 11px; }
+    .schema-table .col .note { color: #475569; font-size: 11px; font-style: italic; max-width: 140px; text-align: right; }
+
+    /* ── PRINCIPLE ── */
+    .principle {
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid #1e2235;
+    }
+    .principle:last-child { border-bottom: none; }
+    .principle-num { min-width: 28px; height: 28px; background: linear-gradient(135deg, #6ee7b7, #3b82f6); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #0f1117; }
+    .principle-title { font-size: 14px; font-weight: 600; color: #e2e8f0; margin-bottom: 2px; }
+    .principle-desc { font-size: 12px; color: #64748b; }
+
+    /* ── ACCOUNT TABLE ── */
+    .account-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 700px) { .account-grid { grid-template-columns: 1fr; } .arch-grid { grid-template-columns: 1fr; } }
+    .account-card { border-radius: 10px; padding: 18px; border: 1px solid; }
+    .account-rh { background: #1a0f0f; border-color: #7f1d1d; }
+    .account-fidelity { background: #0f1a1a; border-color: #134e4a; }
+    .account-ms { background: #0f1117; border-color: #1e3a5f; }
+    .account-card .acct-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+    .account-rh .acct-name { color: #f87171; }
+    .account-fidelity .acct-name { color: #6ee7b7; }
+    .account-ms .acct-name { color: #60a5fa; }
+    .account-card .acct-type { font-size: 12px; color: #64748b; margin-bottom: 10px; }
+    .account-card .acct-row { font-size: 12px; color: #94a3b8; margin-bottom: 4px; display: flex; gap: 6px; }
+    .account-card .acct-row strong { color: #e2e8f0; }
+
+    /* ── TECH STACK ── */
+    .tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .tech-item { background: #1a1d27; border: 1px solid #2d3148; border-radius: 8px; padding: 12px 14px; }
+    .tech-item .purpose { font-size: 11px; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .05em; }
+    .tech-item .library { font-size: 13px; font-weight: 600; color: #e2e8f0; font-family: monospace; }
+
+    section { scroll-margin-top: 56px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">💰 Finance Tracker</span>
+  <a href="#overview">Overview</a>
+  <a href="#accounts">Accounts</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#flows">Data Flows</a>
+  <a href="#schema">Database</a>
+  <a href="#principles">Principles</a>
+  <a href="#phases">Phases</a>
+  <a href="#techstack">Tech Stack</a>
+</nav>
+
+<div class="page">
+
+  <!-- ── HERO ── -->
+  <section id="overview">
+    <h1>Finance Tracker</h1>
+    <p class="subtitle">A local-only personal finance system — consolidates 3 brokerages, enriches with LLM research, delivers intelligence via Telegram.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3>🏦 3 Brokerages</h3>
+        <p>Robinhood (taxable), Fidelity (Roth IRA), and Morgan Stanley (MSFT shares). Each ingested differently and merged into a unified portfolio view.</p>
+      </div>
+      <div class="card">
+        <h3>🤖 LLM-Powered Research</h3>
+        <p>Forward a tweet to Telegram → Claude extracts tickers → Opus runs deep research using SEC EDGAR, yfinance, and NewsAPI → thesis stored.</p>
+      </div>
+      <div class="card">
+        <h3>📱 Telegram Bot</h3>
+        <p>Commands for portfolio, thesis, targets, and rebalance. Scheduled morning briefing at 9am ET and EOD digest at 4:30pm ET — all running locally on your Mac.</p>
+      </div>
+      <div class="card">
+        <h3>💾 SQLite (Local-Only)</h3>
+        <p>All data stored on-device. No hosting, no tunneling, no external exposure. FastAPI runs on <code>127.0.0.1:8000</code>. Bot calls the API over localhost.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ACCOUNTS ── -->
+  <section id="accounts">
+    <h2><span class="icon">🏦</span> Account Setup</h2>
+    <div class="account-grid">
+      <div class="account-card account-rh">
+        <div class="acct-name">Robinhood</div>
+        <div class="acct-type">Taxable brokerage · 24/7 trading</div>
+        <div class="acct-row"><strong>Tax:</strong> Taxable income</div>
+        <div class="acct-row"><strong>Strategy:</strong> Prefer LTCG (&gt;1 year)</div>
+        <div class="acct-row"><strong>Ingestion:</strong> Paste text → regex parser</div>
+        <div class="acct-row"><strong>Caution:</strong> STCG lots flagged on every sell suggestion</div>
+      </div>
+      <div class="account-card account-fidelity">
+        <div class="acct-name">Fidelity</div>
+        <div class="acct-type">Roth IRA · Tax-free</div>
+        <div class="acct-row"><strong>Tax:</strong> Tax-free growth</div>
+        <div class="acct-row"><strong>Strategy:</strong> Trade freely, short &amp; long-term</div>
+        <div class="acct-row"><strong>Ingestion:</strong> CSV export → pandas parser</div>
+        <div class="acct-row"><strong>Priority:</strong> Sell here first before Robinhood</div>
+      </div>
+      <div class="account-card account-ms">
+        <div class="acct-name">Morgan Stanley</div>
+        <div class="acct-type">Taxable · MSFT shares only</div>
+        <div class="acct-row"><strong>Tax:</strong> Taxable</div>
+        <div class="acct-row"><strong>Strategy:</strong> No active trading</div>
+        <div class="acct-row"><strong>Ingestion:</strong> Config (share count) × live price</div>
+        <div class="acct-row"><strong>Source:</strong> <code>accounts.yaml</code> + yfinance</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3>⚡ Overlap Handling</h3>
+      <p>Same ticker in Robinhood + Fidelity → <strong>total_shares = RH + Fidelity</strong>. Portfolio shows both combined and per-account views. Rebalance engine recommends selling from Fidelity first (tax-free) before touching Robinhood lots.</p>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <h3>🏆 Investment Routing Preference</h3>
+      <p style="margin-bottom:10px;">Rebalance suggestions always show <em>which account</em> the trade should happen in, and why.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="background:#134e4a;color:#6ee7b7;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;min-width:24px;text-align:center;">1</span>
+          <div><span style="color:#6ee7b7;font-weight:600;">Fidelity first</span> <span style="color:#64748b;font-size:13px;">(Roth IRA) — preferred for new buys; no tax drag; trade freely</span></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="background:#7f1d1d;color:#f87171;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;min-width:24px;text-align:center;">2</span>
+          <div><span style="color:#f87171;font-weight:600;">Robinhood fallback</span> <span style="color:#64748b;font-size:13px;">— only when liquidity needed; margin available; STCG impact flagged on every suggested sell</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ARCHITECTURE ── -->
+  <section id="architecture">
+    <h2><span class="icon">🏗️</span> Architecture</h2>
+    <div class="arch">
+      <div style="font-size:12px;color:#475569;margin-bottom:20px;">All components run on your Mac. Bot calls FastAPI over localhost. No external access.</div>
+
+      <!-- Row 1: Entry points -->
+      <div class="arch-grid">
+        <div class="arch-box color-green">
+          <div class="label">Entry Point</div>
+          <div class="title">CLI Scripts</div>
+          <div class="desc"><code>scripts/ingest_rh.py</code><br><code>scripts/ingest_fidelity.py</code><br><code>scripts/init_db.py</code></div>
+        </div>
+        <div class="arch-box color-blue">
+          <div class="label">Entry Point</div>
+          <div class="title">Telegram Bot</div>
+          <div class="desc"><code>bot/main.py</code><br>Commands + free-text handler<br>Scheduled digests (APScheduler)</div>
+        </div>
+        <div class="arch-box color-purple">
+          <div class="label">Scheduler</div>
+          <div class="title">APScheduler</div>
+          <div class="desc">9:00 AM ET — morning briefing<br>4:30 PM ET — EOD digest<br>Every 5 min — price target poll</div>
+        </div>
+      </div>
+
+      <div class="arrow-row">↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↓ httpx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↓</div>
+
+      <!-- Row 2: API -->
+      <div style="background:#0f1117;border:1px solid #334155;border-radius:10px;padding:16px 20px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:#60a5fa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">FastAPI Server — 127.0.0.1:8000</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span style="background:#1e3a5f;color:#60a5fa;padding:4px 10px;border-radius:6px;font-size:12px;font-family:monospace;">/portfolio</span>
+          <span style="background:#1e3a5f;color:#60a5fa;padding:4px 10px;border-radius:6px;font-size:12px;font-family:monospace;">/research</span>
+          <span style="background:#1e3a5f;color:#60a5fa;padding:4px 10px;border-radius:6px;font-size:12px;font-family:monospace;">/thesis</span>
+          <span style="background:#1e3a5f;color:#60a5fa;padding:4px 10px;border-radius:6px;font-size:12px;font-family:monospace;">/targets</span>
+          <span style="background:#1e3a5f;color:#60a5fa;padding:4px 10px;border-radius:6px;font-size:12px;font-family:monospace;">/rebalance</span>
+          <span style="background:#1e3a5f;color:#60a5fa;padding:4px 10px;border-radius:6px;font-size:12px;font-family:monospace;">/ingest</span>
+        </div>
+      </div>
+
+      <div class="arrow-row">↓</div>
+
+      <!-- Row 3: Core modules -->
+      <div class="arch-grid" style="grid-template-columns:repeat(6,1fr);min-width:700px;">
+        <div class="arch-box color-green" style="grid-column:span 2;">
+          <div class="label">Module</div>
+          <div class="title">ingestion/</div>
+          <div class="desc">RH paste, Fidelity CSV, MS synthetic, deduplication</div>
+        </div>
+        <div class="arch-box color-blue" style="grid-column:span 2;">
+          <div class="label">Module</div>
+          <div class="title">portfolio/</div>
+          <div class="desc">builder, aggregator, performance, tax, cash</div>
+        </div>
+        <div class="arch-box color-purple" style="grid-column:span 2;">
+          <div class="label">Module</div>
+          <div class="title">research/</div>
+          <div class="desc">extractor (intent+thesis+context+tickers), researcher, theme_accumulator, validators, SEC/Yahoo/News</div>
+        </div>
+        <div class="arch-box color-orange" style="grid-column:span 2;">
+          <div class="label">Module</div>
+          <div class="title">market/</div>
+          <div class="desc">pricing (yfinance cache), sectors (GICS), targets</div>
+        </div>
+        <div class="arch-box color-yellow" style="grid-column:span 2;">
+          <div class="label">Module</div>
+          <div class="title">thesis/</div>
+          <div class="desc">versioned store, FTS5 search, LLM editor</div>
+        </div>
+        <div class="arch-box color-red" style="grid-column:span 2;">
+          <div class="label">Module</div>
+          <div class="title">rebalance/</div>
+          <div class="desc">rule engine, tax-aware suggestions (advisory only)</div>
+        </div>
+      </div>
+
+      <div class="arrow-row">↓</div>
+
+      <!-- Row 4: DB -->
+      <div style="background:#0f1117;border:1px solid #334155;border-radius:10px;padding:16px 20px;">
+        <div style="font-size:11px;font-weight:700;color:#fbbf24;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">SQLite WAL — data/finance.db</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:#64748b;font-family:monospace;">
+          <span>raw_snapshots</span><span>·</span><span>positions</span><span>·</span><span>tax_lots</span><span>·</span>
+          <span>price_history</span><span>·</span><span>tickers</span><span>·</span><span>price_targets</span><span>·</span>
+          <span>research_jobs</span><span>·</span><span>research_results</span><span>·</span><span>thesis_documents</span><span>·</span>
+          <span>portfolio_snapshots</span><span>·</span><span>alert_log</span>
+        </div>
+      </div>
+
+      <div class="arrow-row">↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↓</div>
+
+      <!-- Row 5: External -->
+      <div class="arch-grid">
+        <div class="arch-box color-purple">
+          <div class="label">External API</div>
+          <div class="title">Anthropic Claude</div>
+          <div class="desc">Sonnet — extraction &amp; thesis<br>Opus — deep research</div>
+        </div>
+        <div class="arch-box color-green">
+          <div class="label">External Data</div>
+          <div class="title">Market Data</div>
+          <div class="desc">yfinance · SEC EDGAR · NewsAPI</div>
+        </div>
+        <div class="arch-box color-blue">
+          <div class="label">External API</div>
+          <div class="title">Telegram</div>
+          <div class="desc">Outbound-only. Bot sends messages to your chat.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DATA FLOWS ── -->
+  <section id="flows">
+    <h2><span class="icon">🔄</span> Key Data Flows</h2>
+
+    <!-- Flow tabs -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="flow-tabs">
+      <button class="flow-tab active" onclick="showFlow('rh')" style="padding:8px 16px;border-radius:8px;border:1px solid #f87171;background:#1a0f0f;color:#f87171;cursor:pointer;font-size:13px;font-weight:600;">Robinhood Ingest</button>
+      <button class="flow-tab" onclick="showFlow('fidelity')" style="padding:8px 16px;border-radius:8px;border:1px solid #334155;background:#1a1d27;color:#94a3b8;cursor:pointer;font-size:13px;font-weight:600;">Fidelity CSV</button>
+      <button class="flow-tab" onclick="showFlow('tweet')" style="padding:8px 16px;border-radius:8px;border:1px solid #334155;background:#1a1d27;color:#94a3b8;cursor:pointer;font-size:13px;font-weight:600;">Tweet → Research</button>
+      <button class="flow-tab" onclick="showFlow('thesis')" style="padding:8px 16px;border-radius:8px;border:1px solid #334155;background:#1a1d27;color:#94a3b8;cursor:pointer;font-size:13px;font-weight:600;">Thesis Update</button>
+      <button class="flow-tab" onclick="showFlow('eod')" style="padding:8px 16px;border-radius:8px;border:1px solid #334155;background:#1a1d27;color:#94a3b8;cursor:pointer;font-size:13px;font-weight:600;">EOD Digest</button>
+    </div>
+
+    <div class="card">
+      <!-- Robinhood Flow -->
+      <div id="flow-rh" class="flow-content-panel">
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-num" style="background:#7f1d1d;color:#f87171;">1</div>
+            <div class="flow-content">
+              <div class="title">Copy Robinhood portfolio text</div>
+              <div class="detail"><code>pbpaste</code> or manual paste → <code>python scripts/ingest_rh.py --paste "$(pbpaste)"</code></div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#7f1d1d;color:#f87171;">2</div>
+            <div class="flow-content">
+              <div class="title">Parse text with regex + dateparser</div>
+              <div class="detail">Extract tickers, shares, cost basis, current price. Auto-detect snapshot date from content.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#7f1d1d;color:#f87171;">3</div>
+            <div class="flow-content">
+              <div class="title">SHA-256 content hash → deduplication check</div>
+              <div class="detail">If <code>UNIQUE(account_id, content_hash)</code> already exists → skip entirely. Safe to run twice.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#7f1d1d;color:#f87171;">4</div>
+            <div class="flow-content">
+              <div class="title">INSERT raw_snapshots (immutable)</div>
+              <div class="detail">Raw paste text stored verbatim. Never overwritten. Serves as source of truth for re-parsing.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#7f1d1d;color:#f87171;">5</div>
+            <div class="flow-content">
+              <div class="title">INSERT positions (one row per ticker)</div>
+              <div class="detail">Each position linked to its snapshot_id and account_id.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#7f1d1d;color:#f87171;">6</div>
+            <div class="flow-content">
+              <div class="title">Enrich new tickers via yfinance</div>
+              <div class="detail">Fetch GICS sector, industry, live price. Cache in <code>price_history</code>. Update <code>tickers</code> table.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#7f1d1d;color:#f87171;">7</div>
+            <div class="flow-content">
+              <div class="title">Recompute today's portfolio_snapshot</div>
+              <div class="detail">Aggregate all accounts → combined total value row. Used for time-series P&amp;L charts.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fidelity Flow -->
+      <div id="flow-fidelity" class="flow-content-panel" style="display:none;">
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-num" style="background:#134e4a;color:#6ee7b7;">1</div>
+            <div class="flow-content">
+              <div class="title">Export from Fidelity (XLSX or CSV)</div>
+              <div class="detail"><code>python scripts/ingest_fidelity.py --file ~/Downloads/Portfolio_Export.xlsx</code> — auto-detects format: <code>pandas.read_excel</code> for .xlsx, <code>pandas.read_csv</code> for .csv</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#134e4a;color:#6ee7b7;">2</div>
+            <div class="flow-content">
+              <div class="title">Fidelity column mapping (handles both export formats)</div>
+              <div class="detail">Maps Fidelity's column names to internal schema. Positions tagged <code>account_id='fidelity'</code> (Roth IRA — tax_free, illiquid).</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#134e4a;color:#6ee7b7;">3</div>
+            <div class="flow-content">
+              <div class="title">Split: cash rows → cash_positions, equity rows → positions</div>
+              <div class="detail">Fidelity exports include cash as a "position." These are routed separately.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#134e4a;color:#6ee7b7;">4</div>
+            <div class="flow-content">
+              <div class="title">Same pipeline as Robinhood from step 3 onward</div>
+              <div class="detail">Dedup → raw_snapshots → positions → enrich → portfolio_snapshot.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tweet Research Flow -->
+      <div id="flow-tweet" class="flow-content-panel" style="display:none;">
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-num" style="background:#2e1e5f;color:#a78bfa;">1</div>
+            <div class="flow-content">
+              <div class="title">You forward a tweet to the Telegram bot</div>
+              <div class="detail">Any free text or forwarded tweet is handled by <code>bot/messages.py</code>.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#2e1e5f;color:#a78bfa;">2</div>
+            <div class="flow-content">
+              <div class="title">Tweet archived as timestamped Markdown file</div>
+              <div class="detail">Raw tweet text saved verbatim to <code>data/raw/tweets/YYYYMMDD_HHMMSS.md</code> before any processing.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#2e1e5f;color:#a78bfa;">3</div>
+            <div class="flow-content">
+              <div class="title">POST /research → extractor.py (Claude Sonnet) — structured extraction</div>
+              <div class="detail">Extracts a full payload: <code>tickers: [NVDA, TSLA]</code> · <code>intent: "bullish on AI capex cycle"</code> · <code>thesis: "NVDA benefits from..."</code> (null if absent) · <code>context: "macro/sector backdrop"</code></div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#2e1e5f;color:#a78bfa;">4</div>
+            <div class="flow-content">
+              <div class="title">INSERT tweet_ingests row</div>
+              <div class="detail">Stores raw_text, file_path, tickers[], intent, thesis, and context. Immutable record of what the tweet said.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#2e1e5f;color:#a78bfa;">5</div>
+            <div class="flow-content">
+              <div class="title">INSERT research_jobs (status='pending') for each new ticker</div>
+              <div class="detail">Jobs queued in DB. Background FastAPI task picks them up.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#2e1e5f;color:#a78bfa;">6</div>
+            <div class="flow-content">
+              <div class="title">researcher.py (Claude Opus) — deep research per ticker</div>
+              <div class="detail">Pulls SEC EDGAR filings, yfinance fundamentals, NewsAPI headlines. Prompt caching on large context blocks. <code>validated=false</code>, raw output stored verbatim.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#2e1e5f;color:#a78bfa;">7</div>
+            <div class="flow-content">
+              <div class="title">validators.py cross-checks LLM sector vs yfinance</div>
+              <div class="detail">If LLM claims NVDA is in "Healthcare" but yfinance says "Technology" → flag mismatch.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#2e1e5f;color:#a78bfa;">8</div>
+            <div class="flow-content">
+              <div class="title">theme_accumulator.py (Claude Sonnet) — thematic clustering</div>
+              <div class="detail">Pulls all tweet_ingests + research_results for related tickers. Identifies or updates thematic clusters (e.g. "AI Capex Cycle", "Rate Sensitivity"). UPSERT <code>themes</code> rows with updated ground_truth summary.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#2e1e5f;color:#a78bfa;">9</div>
+            <div class="flow-content">
+              <div class="title">Bot notifies you: tickers + intent summary + thesis preview</div>
+              <div class="detail">Formatted in Telegram MarkdownV2. Includes intent found and thesis preview if one was extracted.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thesis Flow -->
+      <div id="flow-thesis" class="flow-content-panel" style="display:none;">
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-num" style="background:#3a2e00;color:#fbbf24;">1</div>
+            <div class="flow-content">
+              <div class="title">You send: /thesis NVDA "add Q1 2025 earnings beat"</div>
+              <div class="detail">Handled by <code>bot/commands.py</code> → POST /thesis/NVDA</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#3a2e00;color:#fbbf24;">2</div>
+            <div class="flow-content">
+              <div class="title">thesis/store.py fetches current version</div>
+              <div class="detail">Retrieves the latest thesis markdown for NVDA from <code>thesis_documents</code>.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#3a2e00;color:#fbbf24;">3</div>
+            <div class="flow-content">
+              <div class="title">thesis/editor.py (Claude Sonnet) with prompt caching</div>
+              <div class="detail">Current thesis text passed with <code>cache_control: ephemeral</code> → up to 90% cost reduction on follow-up edits.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#3a2e00;color:#fbbf24;">4</div>
+            <div class="flow-content">
+              <div class="title">content_hash dedup check</div>
+              <div class="detail">If new text is identical to current version → skip write. Prevents empty version bumps.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#3a2e00;color:#fbbf24;">5</div>
+            <div class="flow-content">
+              <div class="title">INSERT thesis_documents version N+1</div>
+              <div class="detail">Monotonically increasing version. Old versions never deleted. FTS5 index updated.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#3a2e00;color:#fbbf24;">6</div>
+            <div class="flow-content">
+              <div class="title">Bot replies: "Thesis updated (v4): [500 char preview]"</div>
+              <div class="detail">You see a preview inline in Telegram without leaving the app.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EOD Flow -->
+      <div id="flow-eod" class="flow-content-panel" style="display:none;">
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-num" style="background:#0c1a2e;color:#60a5fa;">1</div>
+            <div class="flow-content">
+              <div class="title">APScheduler fires at 4:30 PM ET</div>
+              <div class="detail">Also fires morning briefing at 9:00 AM ET. Price target poll every 5 minutes.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#0c1a2e;color:#60a5fa;">2</div>
+            <div class="flow-content">
+              <div class="title">GET /portfolio → combined portfolio state</div>
+              <div class="detail">Merges RH + Fidelity + MS positions. Overlap tickers summed across accounts.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#0c1a2e;color:#60a5fa;">3</div>
+            <div class="flow-content">
+              <div class="title">GET /portfolio/performance → day P&amp;L per ticker</div>
+              <div class="detail">Compares today's prices vs prior close from <code>price_history</code>.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#0c1a2e;color:#60a5fa;">4</div>
+            <div class="flow-content">
+              <div class="title">GET /targets → near-target alerts</div>
+              <div class="detail">Checks proximity to all active buy/sell/alert targets.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:#0c1a2e;color:#60a5fa;">5</div>
+            <div class="flow-content">
+              <div class="title">formatters.py → Telegram MarkdownV2 message</div>
+              <div class="detail">Portfolio Summary · Top Movers · Near Targets · LTCG Tax Reminders (RH positions crossing 1yr this week)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DATABASE ── -->
+  <section id="schema">
+    <h2><span class="icon">🗄️</span> Database Schema</h2>
+    <div class="schema-grid">
+
+      <div class="schema-table">
+        <div class="table-header">accounts</div>
+        <div class="col"><span class="name">id</span><span class="type">TEXT PK</span><span class="note">robinhood / fidelity / morgan_stanley</span></div>
+        <div class="col"><span class="name">display_name</span><span class="type">TEXT</span></div>
+        <div class="col"><span class="name">account_type</span><span class="type">TEXT</span><span class="note">taxable / roth_ira / employer</span></div>
+        <div class="col"><span class="name">tax_treatment</span><span class="type">TEXT</span><span class="note">taxable / tax_free / tax_deferred</span></div>
+      </div>
+
+      <div class="schema-table">
+        <div class="table-header">raw_snapshots <span style="color:#475569;font-size:10px;font-weight:400;">— immutable</span></div>
+        <div class="col"><span class="name">id</span><span class="type">INTEGER PK</span></div>
+        <div class="col"><span class="name">account_id</span><span class="type">TEXT FK</span></div>
+        <div class="col"><span class="name">content_hash</span><span class="type">TEXT</span><span class="note">SHA-256 dedup key</span></div>
+        <div class="col"><span class="name">raw_content</span><span class="type">TEXT</span><span class="note">original paste/CSV verbatim</span></div>
+        <div class="col"><span class="name">snapshot_date</span><span class="type">DATE</span><span class="note">auto-detected</span></div>
+        <div class="col"><span class="name">source_type</span><span class="type">TEXT</span><span class="note">paste / csv / api</span></div>
+        <div class="col"><span class="name">UNIQUE</span><span class="type"></span><span class="note">(account_id, content_hash)</span></div>
+      </div>
+
+      <div class="schema-table">
+        <div class="table-header">positions</div>
+        <div class="col"><span class="name">snapshot_id</span><span class="type">INTEGER FK</span></div>
+        <div class="col"><span class="name">account_id</span><span class="type">TEXT FK</span></div>
+        <div class="col"><span class="name">ticker</span><span class="type">TEXT</span></div>
+        <div class="col"><span class="name">shares</span><span class="type">REAL</span></div>
+        <div class="col"><span class="name">avg_cost_basis</span><span class="type">REAL</span><span class="note">per share</span></div>
+        <div class="col"><span class="name">market_value</span><span class="type">REAL</span><span class="note">shares × price</span></div>
+        <div class="col"><span class="name">position_type</span><span class="type">TEXT</span><span class="note">equity / etf / cash / option</span></div>
+      </div>
+
+      <div class="schema-table">
+        <div class="table-header">tax_lots</div>
+        <div class="col"><span class="name">account_id</span><span class="type">TEXT FK</span></div>
+        <div class="col"><span class="name">ticker</span><span class="type">TEXT</span></div>
+        <div class="col"><span class="name">shares</span><span class="type">REAL</span></div>
+        <div class="col"><span class="name">cost_basis</span><span class="type">REAL</span><span class="note">per share</span></div>
+        <div class="col"><span class="name">acquired_date</span><span class="type">DATE</span></div>
+        <div class="col"><span class="name">lot_type</span><span class="type">TEXT</span><span class="note">LTCG if &gt;365 days</span></div>
+      </div>
+
+      <div class="schema-table">
+        <div class="table-header">thesis_documents <span style="color:#475569;font-size:10px;font-weight:400;">— versioned</span></div>
+        <div class="col"><span class="name">ticker</span><span class="type">TEXT</span></div>
+        <div class="col"><span class="name">version</span><span class="type">INTEGER</span><span class="note">monotonically increasing</span></div>
+        <div class="col"><span class="name">content</span><span class="type">TEXT</span><span class="note">markdown</span></div>
+        <div class="col"><span class="name">content_hash</span><span class="type">TEXT</span><span class="note">skip write if unchanged</span></div>
+        <div class="col"><span class="name">authored_by</span><span class="type">TEXT</span><span class="note">llm / human</span></div>
+        <div class="col"><span class="name">change_summary</span><span class="type">TEXT</span></div>
+      </div>
+
+      <div class="schema-table">
+        <div class="table-header">research_results</div>
+        <div class="col"><span class="name">ticker</span><span class="type">TEXT</span></div>
+        <div class="col"><span class="name">raw_llm_output</span><span class="type">TEXT</span><span class="note">never discarded</span></div>
+        <div class="col"><span class="name">llm_model</span><span class="type">TEXT</span><span class="note">which Claude model</span></div>
+        <div class="col"><span class="name">validated</span><span class="type">BOOLEAN</span><span class="note">default false</span></div>
+        <div class="col"><span class="name">sector_match</span><span class="type">BOOLEAN</span><span class="note">LLM vs yfinance</span></div>
+      </div>
+
+      <div class="schema-table">
+        <div class="table-header">price_targets</div>
+        <div class="col"><span class="name">ticker</span><span class="type">TEXT</span></div>
+        <div class="col"><span class="name">target_price</span><span class="type">REAL</span></div>
+        <div class="col"><span class="name">target_type</span><span class="type">TEXT</span><span class="note">buy / sell / alert</span></div>
+        <div class="col"><span class="name">account_id</span><span class="type">TEXT</span><span class="note">NULL = all accounts</span></div>
+        <div class="col"><span class="name">triggered_at</span><span class="type">DATETIME</span><span class="note">set when alert fires</span></div>
+      </div>
+
+      <div class="schema-table">
+        <div class="table-header">tweet_ingests <span style="color:#475569;font-size:10px;font-weight:400;">— raw tweet store</span></div>
+        <div class="col"><span class="name">id</span><span class="type">INTEGER PK</span></div>
+        <div class="col"><span class="name">raw_text</span><span class="type">TEXT</span><span class="note">verbatim tweet</span></div>
+        <div class="col"><span class="name">file_path</span><span class="type">TEXT</span><span class="note">data/raw/tweets/…md</span></div>
+        <div class="col"><span class="name">tickers</span><span class="type">TEXT</span><span class="note">JSON array</span></div>
+        <div class="col"><span class="name">intent</span><span class="type">TEXT</span><span class="note">LLM-extracted author intent</span></div>
+        <div class="col"><span class="name">thesis</span><span class="type">TEXT</span><span class="note">NULL if not present</span></div>
+        <div class="col"><span class="name">context</span><span class="type">TEXT</span><span class="note">macro/sector backdrop</span></div>
+        <div class="col"><span class="name">ingested_at</span><span class="type">DATETIME</span></div>
+      </div>
+
+      <div class="schema-table">
+        <div class="table-header">themes <span style="color:#475569;font-size:10px;font-weight:400;">— thematic ground truth</span></div>
+        <div class="col"><span class="name">id</span><span class="type">INTEGER PK</span></div>
+        <div class="col"><span class="name">theme_name</span><span class="type">TEXT UNIQUE</span><span class="note">"AI Capex Cycle"</span></div>
+        <div class="col"><span class="name">ground_truth</span><span class="type">TEXT</span><span class="note">LLM-synthesized summary</span></div>
+        <div class="col"><span class="name">related_tickers</span><span class="type">TEXT</span><span class="note">JSON array</span></div>
+        <div class="col"><span class="name">source_tweet_ids</span><span class="type">TEXT</span><span class="note">JSON array</span></div>
+        <div class="col"><span class="name">version</span><span class="type">INTEGER</span><span class="note">increasing per theme</span></div>
+        <div class="col"><span class="name">last_updated_at</span><span class="type">DATETIME</span></div>
+      </div>
+
+
+        <div class="col"><span class="name">snapshot_date</span><span class="type">DATE</span></div>
+        <div class="col"><span class="name">account_id</span><span class="type">TEXT</span><span class="note">NULL = total portfolio</span></div>
+        <div class="col"><span class="name">total_value</span><span class="type">REAL</span></div>
+        <div class="col"><span class="name">day_change</span><span class="type">REAL</span></div>
+        <div class="col"><span class="name">UNIQUE</span><span class="type"></span><span class="note">(snapshot_date, account_id)</span></div>
+      </div>
+
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <p>🔍 <strong>FTS5 virtual tables:</strong> <code>thesis_fts</code> for per-ticker theses · <code>themes_fts</code> for thematic knowledge — both support full-text search. <strong>WAL mode</strong> on SQLite allows concurrent reads while writing.</p>
+    </div>
+  </section>
+
+  <!-- ── DESIGN PRINCIPLES ── -->
+  <section id="principles">
+    <h2><span class="icon">📐</span> Design Principles</h2>
+    <div class="card">
+      <div class="principle">
+        <div class="principle-num">1</div>
+        <div>
+          <div class="principle-title">Immutable Raw Data</div>
+          <div class="principle-desc"><code>raw_snapshots</code> is append-only. Re-parsing from original content is always possible. Nothing is ever overwritten.</div>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">2</div>
+        <div>
+          <div class="principle-title">Event-Sourced Portfolio State</div>
+          <div class="principle-desc"><code>portfolio_snapshots</code> is a materialized view recomputable from <code>positions</code> + <code>price_history</code>. Lose it? Rebuild it.</div>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">3</div>
+        <div>
+          <div class="principle-title">Idempotent Ingestion</div>
+          <div class="principle-desc"><code>UNIQUE(account_id, content_hash)</code> enforced at DB level. Running ingestion twice is always safe — no duplicates, no errors.</div>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">4</div>
+        <div>
+          <div class="principle-title">LLM as Enrichment Layer</div>
+          <div class="principle-desc">All LLM outputs stored verbatim with <code>validated=false</code>. LLM never owns authoritative fields until cross-validated by structured sources.</div>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">5</div>
+        <div>
+          <div class="principle-title">Tax-Aware Routing Everywhere</div>
+          <div class="principle-desc"><code>tax_treatment</code> is first-class on <code>accounts</code>. Rebalance rules read it before every suggestion. STCG lots on Robinhood flagged explicitly.</div>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">6</div>
+        <div>
+          <div class="principle-title">Separation of Concerns</div>
+          <div class="principle-desc">Bot only calls API. API only calls modules. Modules have no knowledge of bot or API. Each layer is independently testable.</div>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">7</div>
+        <div>
+          <div class="principle-title">Prompt Caching</div>
+          <div class="principle-desc">Long context (SEC filings, thesis text) uses <code>cache_control: ephemeral</code> in Anthropic API messages — up to 90% cost reduction on repeated runs within the 5-min cache window.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PHASES ── -->
+  <section id="phases">
+    <h2><span class="icon">🚀</span> Implementation Phases</h2>
+    <div class="phase-list">
+      <div class="phase">
+        <div class="phase-num">1</div>
+        <div>
+          <div class="phase-title">Foundation</div>
+          <div class="phase-desc"><code>db/</code> · <code>config/</code> · all 3 ingestors · <code>portfolio/builder</code> + <code>aggregator</code> · <code>market/pricing</code></div>
+          <div class="phase-milestone">✅ Milestone: Ingest all 3 sources; combined portfolio CLI view</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-num">2</div>
+        <div>
+          <div class="phase-title">Portfolio Intelligence</div>
+          <div class="phase-desc"><code>market/sectors</code> · <code>portfolio/tax</code> + <code>performance</code> · <code>market/targets</code> · <code>rebalance/</code></div>
+          <div class="phase-milestone">✅ Milestone: Full tax-aware analysis + rebalance suggestions in CLI</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-num">3</div>
+        <div>
+          <div class="phase-title">Local API</div>
+          <div class="phase-desc">All <code>api/</code> routes (localhost-only FastAPI + uvicorn)</div>
+          <div class="phase-milestone">✅ Milestone: REST API on Mac, testable via curl</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-num">4</div>
+        <div>
+          <div class="phase-title">Tweet Ingestion + Research</div>
+          <div class="phase-desc"><code>tweet_ingests</code> table · tweet archival to markdown · <code>research/extractor</code> (intent + thesis + context + tickers) · <code>researcher.py</code> · <code>api/routes/research</code></div>
+          <div class="phase-milestone">✅ Milestone: Tweet → structured extraction + deep research stored</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-num">5</div>
+        <div>
+          <div class="phase-title">Thematic Knowledge</div>
+          <div class="phase-desc"><code>research/theme_accumulator.py</code> · <code>themes</code> + <code>themes_fts</code> tables</div>
+          <div class="phase-milestone">✅ Milestone: Cross-tweet themes accumulated as versioned ground truth; searchable</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-num">6</div>
+        <div>
+          <div class="phase-title">Thesis Wiki</div>
+          <div class="phase-desc"><code>thesis/store</code> (versioned + FTS5) · <code>thesis/editor</code></div>
+          <div class="phase-milestone">✅ Milestone: Per-ticker thesis, versioned, searchable; informed by themes</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-num">7</div>
+        <div>
+          <div class="phase-title">Telegram Bot</div>
+          <div class="phase-desc">All <code>bot/</code> modules — runs locally on Mac</div>
+          <div class="phase-milestone">✅ Milestone: All commands working, scheduled digests firing</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-num">8</div>
+        <div>
+          <div class="phase-title">Local Autostart</div>
+          <div class="phase-desc">launchd plists for API + bot</div>
+          <div class="phase-milestone">✅ Milestone: API and bot start automatically on Mac login</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-num">9</div>
+        <div>
+          <div class="phase-title">Hardening</div>
+          <div class="phase-desc">Tests · structured logging · pre-commit hooks · README runbook</div>
+          <div class="phase-milestone">✅ Milestone: Production-grade quality</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TECH STACK ── -->
+  <section id="techstack">
+    <h2><span class="icon">🛠️</span> Tech Stack</h2>
+    <div class="tech-grid">
+      <div class="tech-item"><div class="purpose">Language</div><div class="library">Python 3.11+</div></div>
+      <div class="tech-item"><div class="purpose">ORM + Migrations</div><div class="library">SQLAlchemy 2.x + Alembic</div></div>
+      <div class="tech-item"><div class="purpose">Config</div><div class="library">pydantic-settings 2.x</div></div>
+      <div class="tech-item"><div class="purpose">Data Parsing</div><div class="library">pandas 2.x</div></div>
+      <div class="tech-item"><div class="purpose">Date Detection</div><div class="library">dateparser</div></div>
+      <div class="tech-item"><div class="purpose">API Server</div><div class="library">FastAPI + uvicorn</div></div>
+      <div class="tech-item"><div class="purpose">HTTP Client</div><div class="library">httpx (async)</div></div>
+      <div class="tech-item"><div class="purpose">LLM</div><div class="library">anthropic SDK</div></div>
+      <div class="tech-item"><div class="purpose">Market Data</div><div class="library">yfinance</div></div>
+      <div class="tech-item"><div class="purpose">Telegram</div><div class="library">python-telegram-bot 21.x</div></div>
+      <div class="tech-item"><div class="purpose">Scheduling</div><div class="library">APScheduler 3.x</div></div>
+      <div class="tech-item"><div class="purpose">News</div><div class="library">newsapi-python</div></div>
+      <div class="tech-item"><div class="purpose">Linting / Types</div><div class="library">ruff + mypy</div></div>
+      <div class="tech-item"><div class="purpose">Testing</div><div class="library">pytest + pytest-asyncio</div></div>
+      <div class="tech-item"><div class="purpose">Process Manager</div><div class="library">launchd (Mac)</div></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  function showFlow(id) {
+    document.querySelectorAll('.flow-content-panel').forEach(p => p.style.display = 'none');
+    document.getElementById('flow-' + id).style.display = 'block';
+
+    document.querySelectorAll('.flow-tab').forEach(t => {
+      t.style.background = '#1a1d27';
+      t.style.color = '#94a3b8';
+      t.style.borderColor = '#334155';
+    });
+
+    const colors = { rh: '#f87171', fidelity: '#6ee7b7', tweet: '#a78bfa', thesis: '#fbbf24', eod: '#60a5fa' };
+    const bgs = { rh: '#1a0f0f', fidelity: '#0f1a1a', tweet: '#1a0f2e', thesis: '#1a1500', eod: '#0f1a2e' };
+    const btn = event.target;
+    btn.style.background = bgs[id];
+    btn.style.color = colors[id];
+    btn.style.borderColor = colors[id];
+  }
+</script>
+
+</body>
+</html>
